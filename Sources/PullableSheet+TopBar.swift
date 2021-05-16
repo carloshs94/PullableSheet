@@ -19,9 +19,10 @@ extension PullableSheet.TopBarStyle {
     public var view: UIView {
         switch self {
         case .default:
-            let view = UIView(frame: .init(x: 0, y: 5, width: 50, height: 5))
-            view.backgroundColor = .white
-            view.layer.cornerRadius = 3
+            let view = UIView(frame: .init(x: 0, y: 10, width: 40, height: 4))
+            view.backgroundColor = .gray
+            view.alpha = 0.5
+            view.layer.cornerRadius = 2
             return view
         case .custom(let view):
             return view
