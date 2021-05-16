@@ -10,16 +10,18 @@ import UIKit
 
 open class PullableSheet: UIViewController {
 
+    open var minHeight = CGFloat(120)
+    
     open var snapPoints: [SnapPoint] = [.min, .max] {
         didSet { snapPoints.sort() }
     }
 
     private var pullableMinY: CGFloat {
-        return snapPoints.first?.y ?? SnapPoint.min.y
+        return (snapPoints.first?.y ?? SnapPoint.min.y)
     }
 
     private var pullableMaxY: CGFloat {
-        return snapPoints.last?.y ?? SnapPoint.max.y
+        return (snapPoints.last?.y ?? SnapPoint.max.y) - minHeight
     }
 
     private let topBarStyle: TopBarStyle
@@ -52,8 +54,9 @@ open class PullableSheet: UIViewController {
     }
 
     private func setupViews() {
+        //view.layer.zPosition = 1
         view.backgroundColor = .clear
-        view.layer.cornerRadius = 5
+        view.layer.cornerRadius = 35
         view.clipsToBounds = true
 
         let gesture = UIPanGestureRecognizer(target: self, action: #selector(panGesture))
@@ -95,13 +98,19 @@ open class PullableSheet: UIViewController {
     }
 
     private func setupBluredView() {
-        let blurEffect = UIBlurEffect(style: .light) // .dark
+        let blurEffect = UIBlurEffect(style: .dark) // .dark
         let visualEffect = UIVisualEffectView(effect: blurEffect)
         let bluredView = UIVisualEffectView(effect: blurEffect)
-        bluredView.contentView.addSubview(visualEffect)
+        //bluredView.contentView.addSubview(visualEffect)
 
         visualEffect.frame = UIScreen.main.bounds
         bluredView.frame = UIScreen.main.bounds
+        bluredView.alpha = 0.9
+        if #available(iOS 11.0, *) {
+            bluredView.backgroundColor = UIColor(named: "bottomBar")?.withAlphaComponent(0.75)
+        } else {
+            // Fallback on earlier versions
+        }
 
         view.insertSubview(bluredView, at: 0)
     }
@@ -109,12 +118,18 @@ open class PullableSheet: UIViewController {
     open func add(to viewController: UIViewController, view: UIView? = nil) {
         parentView = view ?? viewController.view
         viewController.addContainerView(self, view: view)
-        self.view.autoresizingMask = [.flexibleWidth, .flexibleTopMargin]
+        self.view.autoresizingMask = [.flexibleLeftMargin, .flexibleTopMargin, .flexibleRightMargin]
+
     }
 
     open func scroll(toY y: CGFloat, duration: Double = 0.6) {
         UIView.animate(withDuration: duration, delay: 0.0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0, options: [.allowUserInteraction], animations: {
-            self.view.frame.origin.y = y
+            if y > UIScreen.main.bounds.height - self.minHeight{
+                self.view.frame.origin.y = self.pullableMaxY
+            }else{
+                self.view.frame.origin.y = y
+            }
+            //
         }, completion: nil)
     }
 
